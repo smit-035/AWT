@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Maestro</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎯 Event Maestro Dashboard</h1>
+
+<input id="username" placeholder="Username" />
+<input id="item" placeholder="Item (for purchase)" />
+
+<br/>
+
+<button onclick="send('user-login')">Login</button>
+<button onclick="send('user-logout')">Logout</button>
+<button onclick="send('user-purchase')">Purchase</button>
+<button onclick="send('profile-update')">Profile Update</button>
+
+<hr/>
+
+<button onclick="send('summary')">📊 Show Summary</button>
+
+<script>
+async function send(type) {
+  const username = document.getElementById("username").value;
+  const item = document.getElementById("item").value;
+
+  await fetch(`/event/${type}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, item })
+  });
+
+  alert(type + " triggered!");
+}
+</script>
+
+</body>
+</html>
