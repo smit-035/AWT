@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Checkout - Hotel PMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+background:linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+url("https://images.unsplash.com/photo-1566073771259-6a8506099945");
+background-size:cover;background-position:center;
+min-height:100vh;padding:40px;
+}
+
+.container{
+width:900px;margin:auto;background:white;border-radius:18px;
+overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.5);
+}
+
+.navbar{
+background:linear-gradient(140deg,#f97316,#fb7185,#6366f1);
+color:white;padding:18px 25px;
+display:flex;align-items:center;gap:25px;
+}
+
+.navbar img{
+width:40px;height:40px;border-radius:50%;
+object-fit:cover;border:2px solid white;
+}
+
+.navbar h2{margin-right:auto;font-size:18px;}
+
+.navbar a{color:white;text-decoration:none;font-size:14px;}
+.navbar a:hover{text-decoration:underline;}
+
+.content{padding:30px;}
+
+h1{text-align:center;margin-bottom:20px;}
+
+select,input{
+width:100%;padding:10px;margin:8px 0;
+border:1px solid #ddd;border-radius:8px;
+}
+
+.bill{
+background:#f9fafb;
+padding:20px;
+border-radius:12px;
+margin-top:20px;
+line-height:1.8;
+}
+
+button{
+padding:12px;
+margin-top:10px;
+width:48%;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:15px;
+}
+
+.bill-btn{background:#6366f1;color:white;}
+.checkout-btn{background:#fb7185;color:white;}
+
+.row{display:flex;gap:4%;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="navbar">
+<img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267">
+<h2>Hotel PMS</h2>
+
+<a href="dashboard.html">Dashboard</a>
+<a href="rooms.html">Rooms</a>
+<a href="booking.html">Booking</a>
+<a href="checkout.html">Checkout</a>
+<a href="reports.html">Reports</a>
+</div>
+
+<div class="content">
+
+<h1>Checkout</h1>
+
+<label>Select Guest</label>
+<select id="guestSelect" onchange="showBill()"></select>
+
+<label>Extra Services (₹)</label>
+<input type="number" id="extras" value="0" oninput="showBill()">
+
+<div class="bill" id="billBox">
+Select a guest to generate bill
+</div>
+
+<div class="row">
+<button class="bill-btn" onclick="generateBill()">Generate Bill</button>
+<button class="checkout-btn" onclick="finalCheckout()">Checkout</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let rooms = JSON.parse(localStorage.getItem("rooms")) || [];
+let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+let current = null;
+const ratePerNight = 2000;
+
+function loadGuests(){
+let select=document.getElementById("guestSelect");
+select.innerHTML="<option value=''>Select guest</option>";
+
+bookings.forEach((b,i)=>{
+select.innerHTML+=`<option value="${i}">${b.guest} - Room ${b.room}</option>`;
+});
+}
+
+function nights(a,b){
+let d1=new Date(a);
+let d2=new Date(b);
+return Math.max(1,(d2-d1)/(1000*60*60*24));
+}
+
+function showBill(){
+
+let i=document.getElementById("guestSelect").value;
+if(i==="") return;
+
+current=bookings[i];
+
+let stay=nights(current.checkin,current.checkout);
+let roomCharge=stay*ratePerNight;
+let extra=parseInt(document.getElementById("extras").value)||0;
+let total=roomCharge+extra;
+
+document.getElementById("billBox").innerHTML=`
+<b>Guest:</b> ${current.guest}<br>
+<b>Room:</b> ${current.room}<br>
+<b>Stay:</b> ${stay} nights<br><br>
+Room Charges: ₹${roomCharge}<br>
+Extra Services: ₹${extra}<br>
+<b>Total: ₹${total}</b>
+`;
+}
+
+function generateBill(){
+if(!current){alert("Select guest first");return;}
+alert("Bill generated successfully!");
+}
+
+function finalCheckout(){
+if(!current){alert("Select guest first");return;}
+
+rooms.forEach(r=>{
+if(r.no===current.room) r.status="Available";
+});
+
+history.push(current);
+
+bookings=bookings.filter(b=>b.id!==current.id);
+
+localStorage.setItem("rooms",JSON.stringify(rooms));
+localStorage.setItem("bookings",JSON.stringify(bookings));
+localStorage.setItem("history",JSON.stringify(history));
+
+alert("Checkout complete!");
+
+location.reload();
+}
+
+loadGuests();
+
+</script>
+
+</body>
+</html>

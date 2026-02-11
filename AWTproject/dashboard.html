@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard - Hotel PMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+background:linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+url("https://images.unsplash.com/photo-1566073771259-6a8506099945");
+background-size:cover;background-position:center;
+min-height:100vh;padding:40px;
+}
+
+.dashboard{
+width:1000px;margin:auto;background:white;border-radius:18px;
+overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.5);
+}
+
+/* Navbar */
+.navbar{
+background:linear-gradient(140deg,#f97316,#fb7185,#6366f1);
+color:white;padding:18px 25px;
+display:flex;align-items:center;gap:25px;
+}
+
+.navbar img{
+width:40px;height:40px;border-radius:50%;
+object-fit:cover;border:2px solid white;
+}
+
+.navbar h2{margin-right:auto;font-size:18px;}
+
+.navbar a{
+color:white;text-decoration:none;font-size:14px;
+}
+
+.navbar a:hover{text-decoration:underline;}
+
+.content{padding:30px;}
+
+/* Stats */
+.stats{
+display:flex;
+justify-content:space-around;
+padding:20px 0;
+background:#f9fafb;
+border-radius:12px;
+}
+
+.card{
+background:white;
+width:200px;
+padding:20px;
+border-radius:14px;
+text-align:center;
+box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+
+.card h3{
+font-size:14px;
+color:#6b7280;
+}
+
+.card p{
+font-size:32px;
+font-weight:600;
+margin-top:10px;
+}
+
+/* Activity */
+.activity{
+margin-top:25px;
+}
+
+.activity-box{
+background:#f3f4f6;
+padding:20px;
+border-radius:12px;
+font-size:14px;
+line-height:1.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<div class="navbar">
+<img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267">
+<h2>Hotel PMS Dashboard</h2>
+
+<a href="dashboard.html">Dashboard</a>
+<a href="rooms.html">Rooms</a>
+<a href="booking.html">Booking</a>
+<a href="checkout.html">Checkout</a>
+<a href="reports.html">Reports</a>
+</div>
+
+<div class="content">
+
+<div class="stats">
+<div class="card">
+<h3>Total Rooms</h3>
+<p id="totalRooms">0</p>
+</div>
+
+<div class="card">
+<h3>Available</h3>
+<p id="availableRooms">0</p>
+</div>
+
+<div class="card">
+<h3>Occupied</h3>
+<p id="occupiedRooms">0</p>
+</div>
+</div>
+
+<div class="activity">
+<h3 style="margin-bottom:10px;">Recent Activity</h3>
+
+<div class="activity-box" id="activityBox">
+No recent activity
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+
+// Load rooms
+let rooms = JSON.parse(localStorage.getItem("rooms")) || [];
+
+// Calculate stats
+let total = rooms.length;
+let occupied = rooms.filter(r=>r.status==="Occupied").length;
+let available = total - occupied;
+
+// Update UI
+document.getElementById("totalRooms").innerText = total;
+document.getElementById("availableRooms").innerText = available;
+document.getElementById("occupiedRooms").innerText = occupied;
+
+// Load history for activity
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+if(history.length > 0){
+let recent = history.slice(-3).reverse();
+let text = recent.map(h =>
+`Guest ${h.guest} checked out Room ${h.room}`
+).join("<br>");
+
+document.getElementById("activityBox").innerHTML = text;
+}
+
+</script>
+
+</body>
+</html>
