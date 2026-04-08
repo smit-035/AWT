@@ -1,0 +1,15 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+input,
+button {
+    margin-top: 6px;
+    margin-right: 6px;
+    padding: 6px;
+}
+
+.inline-form {
+    display: inline;
+}
