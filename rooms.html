@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rooms - Hotel PMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+background:linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+url("https://images.unsplash.com/photo-1566073771259-6a8506099945");
+background-size:cover;background-position:center;
+min-height:100vh;padding:40px;
+}
+
+.container{
+width:1000px;margin:auto;background:white;border-radius:18px;
+overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.5);
+}
+
+.navbar{
+background:linear-gradient(140deg,#f97316,#fb7185,#6366f1);
+color:white;padding:18px 25px;
+display:flex;align-items:center;gap:25px;
+}
+
+.navbar img{
+width:40px;height:40px;border-radius:50%;
+object-fit:cover;border:2px solid white;
+}
+
+.navbar h2{margin-right:auto;font-size:18px;}
+
+.navbar a{
+color:white;text-decoration:none;font-size:14px;
+}
+
+.navbar a:hover{text-decoration:underline;}
+
+.content{padding:30px;}
+
+h1{text-align:center;margin-bottom:20px;}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+padding:12px;
+border-bottom:1px solid #ddd;
+text-align:center;
+}
+
+th{background:#6366f1;color:white;}
+
+button{
+padding:6px 10px;margin:2px;border:none;
+border-radius:6px;cursor:pointer;
+}
+
+.assign{background:#22c55e;color:white;}
+.add{margin-top:20px;background:#fb7185;color:white;padding:10px 20px;}
+
+.available{color:green;font-weight:bold;}
+.occupied{color:red;font-weight:bold;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="navbar">
+<img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267">
+<h2>Hotel PMS</h2>
+
+<a href="dashboard.html">Dashboard</a>
+<a href="rooms.html">Rooms</a>
+<a href="booking.html">Booking</a>
+<a href="checkout.html">Checkout</a>
+<a href="reports.html">Reports</a>
+</div>
+
+<div class="content">
+
+<h1>Room Management</h1>
+
+<table id="roomTable"></table>
+
+<button class="add" onclick="addRoom()">Add New Room</button>
+
+</div>
+</div>
+
+<!-- API FILE -->
+<script src="api.js"></script>
+
+<script>
+if (!localStorage.getItem("loggedIn")) {
+    window.location.href = "login.html";
+}
+
+// LOAD ROOMS FROM BACKEND
+async function renderRooms() {
+  try {
+    const rooms = await getRooms();
+    console.log("Rooms:", rooms);
+
+    let table = document.getElementById("roomTable");
+
+    table.innerHTML = `
+    <tr>
+      <th>Room No</th>
+      <th>Type</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>`;
+
+    rooms.forEach(r => {
+      table.innerHTML += `
+      <tr>
+        <td>${r.room_number}</td>
+        <td>${r.type}</td>
+        <td class="${r.status==='Available'?'available':'occupied'}">${r.status}</td>
+        <td>
+          <button class="assign" onclick="toggleRoom(${r.id})">Toggle</button>
+        </td>
+      </tr>`;
+    });
+
+  } catch (err) {
+    console.error("Error loading rooms:", err);
+  }
+}
+
+// TOGGLE ROOM STATUS
+async function toggleRoom(id) {
+  await fetch(`http://localhost:5000/api/rooms/${id}`, {
+    method: "PUT"
+  });
+
+  renderRooms();
+}
+
+// ADD ROOM
+async function addRoom() {
+  let room = prompt("Enter room number:");
+  let type = prompt("Enter room type (Standard/Deluxe):");
+
+  if (!room || !type) {
+    alert("All fields required");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/rooms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        room_number: room,
+        type: type
+      })
+    });
+
+    const data = await res.json();
+    console.log("Response:", data);
+
+    alert("Room added successfully");
+
+    renderRooms(); // refresh UI
+
+  } catch (err) {
+    console.error(err);
+    alert("Error adding room");
+  }
+}
+
+// ✅ IMPORTANT: CALL FUNCTION ON PAGE LOAD
+renderRooms();
+
+</script>

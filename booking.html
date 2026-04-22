@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Booking - Hotel PMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+background:linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+url("https://images.unsplash.com/photo-1566073771259-6a8506099945");
+background-size:cover;background-position:center;
+min-height:100vh;padding:40px;
+}
+
+.container{
+width:900px;margin:auto;background:white;border-radius:18px;
+overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.5);
+}
+
+/* Navbar */
+.navbar{
+background:linear-gradient(140deg,#f97316,#fb7185,#6366f1);
+color:white;padding:18px 25px;
+display:flex;align-items:center;gap:25px;
+}
+
+.navbar img{
+width:40px;height:40px;border-radius:50%;
+object-fit:cover;border:2px solid white;
+}
+
+.navbar h2{margin-right:auto;font-size:18px;}
+
+.navbar a{
+color:white;text-decoration:none;font-size:14px;
+}
+
+.navbar a:hover{text-decoration:underline;}
+
+.content{padding:30px;}
+
+h1{text-align:center;margin-bottom:20px;}
+
+.form-group{margin-bottom:15px;}
+
+label{font-size:14px;color:#374151;}
+
+input, select{
+width:100%;padding:10px;margin-top:5px;
+border:1px solid #ddd;border-radius:8px;
+}
+
+.rooms{
+margin-top:15px;
+display:flex;gap:10px;flex-wrap:wrap;
+}
+
+.room-btn{
+padding:8px 12px;border:none;border-radius:8px;
+background:#22c55e;color:white;cursor:pointer;
+}
+
+.room-btn.selected{background:#6366f1;}
+
+.confirm{
+margin-top:20px;
+padding:12px;
+width:100%;
+background:#fb7185;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- Navbar (UPDATED) -->
+<div class="navbar">
+<img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267">
+<h2>Hotel PMS</h2>
+
+<a href="dashboard.html">Dashboard</a>
+<a href="rooms.html">Rooms</a>
+<a href="booking.html">Booking</a>
+<a href="checkout.html">Checkout</a>
+<a href="reports.html">Reports</a>
+</div>
+
+<div class="content">
+
+<h1>New Booking</h1>
+
+<div class="form-group">
+<label>Guest Name</label>
+<input type="text" id="guest">
+</div>
+
+<div class="form-group">
+<label>Phone</label>
+<input type="text" id="phone">
+</div>
+
+<div class="form-group">
+<label>Room Type</label>
+<select id="type">
+<option>Standard</option>
+<option>Deluxe</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Check-in</label>
+<input type="date" id="checkin">
+</div>
+
+<div class="form-group">
+<label>Check-out</label>
+<input type="date" id="checkout">
+</div>
+
+<h3 style="margin-top:15px;">Available Rooms</h3>
+<div class="rooms" id="roomList"></div>
+
+<button class="confirm" onclick="confirmBooking()">Confirm Booking</button>
+
+</div>
+</div>
+
+<script src="api.js"></script>
+
+<script>
+
+// 🔐 AUTH CHECK
+if (!localStorage.getItem("loggedIn")) {
+  window.location.href = "login.html";
+}
+
+let rooms = [];
+let selectedRoom = null;
+
+// LOAD ROOMS FROM BACKEND
+async function loadRooms() {
+  try {
+    rooms = await getRooms();
+    console.log("Rooms:", rooms);
+
+    let list = document.getElementById("roomList");
+    list.innerHTML = "";
+
+    rooms
+      .filter(r => r.status && r.status.toLowerCase() === "available")
+      .forEach(r => {
+        let btn = document.createElement("button");
+        btn.innerText = r.room_number;
+        btn.className = "room-btn";
+
+        btn.onclick = () => {
+          document.querySelectorAll(".room-btn")
+            .forEach(b => b.classList.remove("selected"));
+
+          btn.classList.add("selected");
+          selectedRoom = r.id;
+        };
+
+        list.appendChild(btn);
+      });
+
+  } catch (err) {
+    console.error("Error loading rooms:", err);
+  }
+}
+
+// CONFIRM BOOKING
+async function confirmBooking() {
+  let guest = document.getElementById("guest").value;
+  let phone = document.getElementById("phone").value;
+  let checkin = document.getElementById("checkin").value;
+  let checkout = document.getElementById("checkout").value;
+
+  if (!guest || !phone || !selectedRoom) {
+    alert("Please fill all details");
+    return;
+  }
+
+  try {
+    await createBooking({
+      guest_name: guest,
+      phone: phone,
+      room_id: selectedRoom,
+      checkin,
+      checkout
+    });
+
+    alert("Booking Confirmed!");
+    loadRooms(); // refresh available rooms
+
+  } catch (err) {
+    console.error("Booking error:", err);
+  }
+}
+
+// LOAD ON PAGE START
+document.addEventListener("DOMContentLoaded", loadRooms);
+
+</script>
+
+</body>
+</html>
